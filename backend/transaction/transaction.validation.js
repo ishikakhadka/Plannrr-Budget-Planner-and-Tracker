@@ -18,11 +18,14 @@ export const transactionSchema = yup.object({
         "bills and utilities",
         "grocery",
         "feul",
+        "salary",
         "rent",
         "other",
       ],
       "Invalid category"
-    ),
+  ),
+  date: yup.date().default(() => new Date()),
+  
   type: yup
     .string().trim()
     .required("Type is required")

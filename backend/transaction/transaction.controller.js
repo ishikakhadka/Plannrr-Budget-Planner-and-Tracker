@@ -14,7 +14,7 @@ export const viewTransactionController = async (req, res) => {
     const userId = req.loggedInUserId; // coming from isUser middleware
 
     const transactions = await TransactionTable.find({ userId }).select(
-      "title amount type category description createdAt"
+      "title amount type category description createdAt date"
     );
 
     return res.status(200).json({
@@ -23,6 +23,27 @@ export const viewTransactionController = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching transactions:", error.message);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+export const recentPaymentsController = async (req, res) => {
+  try {
+    const userId = req.loggedInUserId;
+    const limit = Number(req.body.limit) || 2;
+
+    const recentPayments = await TransactionTable.find({ userId })
+      .select("title amount type category date")
+      .sort({ date: -1 })
+      .limit(limit);
+
+    return res.status(200).json({
+      message: "Recent payments fetched successfully",
+      payments: recentPayments,
+    });
+  } catch (error) {
+    console.error("Error fetching recent payments:", error.message);
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -50,26 +71,13 @@ router.post(
   }
 );
 //get transaction
-router.post("/view/transaction", isUser, viewTransactionController, async (req, res) => {
-  const transaction = await TransactionTable.aggregate([
-    {
-      $match: {
-        userId: userId,
-      },
-    },
-    {
-      $project: {
-        title: 1,
-        type: 1,
-        category: 1,
-        amount: 1,
-        description: 1,
-      
-      },
-    },
-  ]);
-  return res.status(400).send({Transaction:transaction})
-})
+router.post("/view/transaction", isUser, viewTransactionController)
+ 
+  router.post("/recent-payments", isUser, recentPaymentsController);
+
+
+
+
 router.delete("/delete/transaction/:id", isUser, validateMongoIdFromReqParams, isOwnerOfTransaction, async(req, res, next) => {
   await TransactionTable.deleteOne({ _id: req.params.id });
   console.log(req.params.id);

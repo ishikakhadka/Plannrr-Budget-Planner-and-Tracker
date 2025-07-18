@@ -24,6 +24,7 @@ const transactionSchema = new mongoose.Schema(
         "grocery",
         "feul",
         "rent",
+        "salary",
         "other",
       ],
     },
@@ -32,6 +33,11 @@ const transactionSchema = new mongoose.Schema(
       required: true,
       enum: ["income", "expenses"],
     },
+    date: {
+      type: Date,
+      default: Date.now,
+    },
+
     description: {
       type: String,
       trim: true,
